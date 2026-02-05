@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+
+model User {
+  id        Int       @id @default(autoincrement())
+  userId    String    @unique
+  password  String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  gender    Gender
+  phone     String    @unique
+  name      String
+  role      Role      @default(worker)
+  productionPlans ProductionPlan[]
+
+  @@map("users")
+}
+
+// 제품 마스터 (곱창, 막창 등)
+model Product {
+  id        Int       @id @default(autoincrement())
+  name      String    // 제품명
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  packagingSpecs  PackagingSpec[]
+  productionPlans ProductionPlan[]
+
+  @@map("products")
+}
+
+model PackagingSpec {
+  id          Int       @id @default(autoincrement())
+  productId   Int       @map("product_id")
+  name        String    // 규격명 (예: "2kg 팩", "500g 소포장")
+  gramPerPack BigInt    @map("gram_per_pack")  // 팩당 그램수
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  product         Product          @relation(fields: [productId], references: [id])
+  productionPlans ProductionPlan[]
+
+  @@map("packaging_specs")
+}
+
+// 생산 계획 & 실제 생산 결과
+model ProductionPlan {
+  id               Int       @id @default(autoincrement())
+  productionDate   DateTime  @map("production_date")      // 생산일
+  productId        Int       @map("product_id")
+  packagingSpecId  Int       @map("packaging_spec_id")
+  targetAmountGram BigInt    @map("target_amount_gram")   // 목표량 (g)
+  resultAmountGram BigInt?   @map("result_amount_gram")   // 실제 생산량 (g)
+  resultPackCount  Int?      @map("result_pack_count")    // 실제 팩 수
+  memo             String?   // 비고
+  createdById      Int       @map("created_by_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  product       Product       @relation(fields: [productId], references: [id])
+  packagingSpec PackagingSpec @relation(fields: [packagingSpecId], references: [id])
+  createdBy     User          @relation(fields: [createdById], references: [id])
+
+  @@map("production_plans")
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum Role {
+  owner
+  manager
+  worker
+}
