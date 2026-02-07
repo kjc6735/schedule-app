@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { PackagingSpecsModule } from './packaging-specs/packaging-specs.module';
+import { ProductionPlansModule } from './production-plans/production-plans.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PackagingSpecsModule } from './packaging-specs/packaging-specs.module';
     AuthModule,
     ProductsModule,
     PackagingSpecsModule,
+    ProductionPlansModule,
   ],
   providers: [
     {
