@@ -27,6 +27,7 @@ model User {
   role      Role      @default(worker)
   productionPlans ProductionPlan[]
 
+  leaves  Leave[]
   @@map("users")
 }
 
@@ -79,6 +80,37 @@ model ProductionPlan {
   createdBy     User          @relation(fields: [createdById], references: [id])
 
   @@map("production_plans")
+}
+
+model Leave {
+  id  Int @id @default(autoincrement())
+  userId  Int @map("user_id")
+  startDate DateTime @map("start_date")
+  endDate DateTime @map("end_date")
+  reason String?
+  totalDays Int
+  status LeaveApproveStatus
+  leaveType LeaveType
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at") 
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("leave")
+}
+
+enum LeaveApproveStatus{
+  requested
+  approved
+  rejected
+}
+
+enum LeaveType {
+  annual
+  sick
+  special
+  official
+  unpaid
 }
 
 enum Gender {
