@@ -8,6 +8,7 @@ import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { PackagingSpecsModule } from './packaging-specs/packaging-specs.module';
 import { ProductionPlansModule } from './production-plans/production-plans.module';
+import { LeavesModule } from './leaves/leaves.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProductionPlansModule } from './production-plans/production-plans.modul
     ProductsModule,
     PackagingSpecsModule,
     ProductionPlansModule,
+    LeavesModule,
   ],
   providers: [
     {
