@@ -63,7 +63,9 @@ describe('AuthService', () => {
 
       await expect(
         service.login({ userId: 'unknown', password: 'pass' }),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(
+        new BadRequestException('아이디와 비밀번호를 다시 확인해주세요.'),
+      );
     });
 
     it('should throw BadRequestException when password does not match', async () => {
@@ -72,7 +74,9 @@ describe('AuthService', () => {
 
       await expect(
         service.login({ userId: 'testuser', password: 'wrong' }),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(
+        new BadRequestException('아이디와 비밀번호를 다시 확인해주세요.'),
+      );
     });
 
     it('should return access and refresh tokens on success', async () => {
@@ -108,14 +112,16 @@ describe('AuthService', () => {
     it('should throw BadRequestException when passwords do not match', async () => {
       await expect(
         service.register({ ...registerDto, passwordConfirm: 'different' }),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(
+        new BadRequestException('비밀번호를 다시 확인해주세요.'),
+      );
     });
 
     it('should throw UnauthorizedException when userId already exists', async () => {
       usersService.getUser.mockResolvedValueOnce(mockUser);
 
       await expect(service.register(registerDto)).rejects.toThrow(
-        UnauthorizedException,
+        new UnauthorizedException('이미 사용중인 아이디입니다.'),
       );
     });
 
@@ -125,7 +131,7 @@ describe('AuthService', () => {
         .mockResolvedValueOnce(mockUser);
 
       await expect(service.register(registerDto)).rejects.toThrow(
-        UnauthorizedException,
+        new UnauthorizedException('이미 사용중인 휴대폰 번호입니다.'),
       );
     });
 
@@ -136,6 +142,7 @@ describe('AuthService', () => {
 
       await service.register(registerDto);
 
+      expect(vi.mocked(bcrypt.hash)).toHaveBeenCalledWith('password123', 10);
       expect(prisma.user.create).toHaveBeenCalledWith({
         data: {
           phone: registerDto.phone,
@@ -154,7 +161,7 @@ describe('AuthService', () => {
       prisma.user.create.mockRejectedValue(new Error('DB Error'));
 
       await expect(service.register(registerDto)).rejects.toThrow(
-        InternalServerErrorException,
+        new InternalServerErrorException('서버오류. 잠시 후 다시 시도해주세요'),
       );
     });
   });

@@ -37,80 +37,86 @@ describe('ProductsController', () => {
   });
 
   describe('createProduct', () => {
-    it('should call productsService.createProduct', () => {
+    it('should call productsService.createProduct and return result', async () => {
       const dto = { name: '제품', packagingSpecs: [] };
       productsService.createProduct.mockResolvedValue(mockProduct);
 
-      controller.createProduct(dto as any);
+      const result = await controller.createProduct(dto as any);
 
       expect(productsService.createProduct).toHaveBeenCalledWith(dto);
+      expect(result).toEqual(mockProduct);
     });
   });
 
   describe('getProductWithPackagingSpecs', () => {
-    it('should call productsService.getProductWithPackagingSpecs', async () => {
+    it('should call productsService.getProductWithPackagingSpecs and return result', async () => {
       productsService.getProductWithPackagingSpecs.mockResolvedValue(
         mockProduct,
       );
 
-      await controller.getProductWithPackagingSpecs(1);
+      const result = await controller.getProductWithPackagingSpecs(1);
 
       expect(
         productsService.getProductWithPackagingSpecs,
       ).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockProduct);
     });
   });
 
   describe('getProducts', () => {
-    it('should call productsService.getProducts with pagination', async () => {
+    it('should call productsService.getProducts and return result', async () => {
       productsService.getProducts.mockResolvedValue([mockProduct]);
 
-      await controller.getProducts({ page: 1, take: 20 });
+      const result = await controller.getProducts({ page: 1, take: 20 });
 
       expect(productsService.getProducts).toHaveBeenCalledWith({
         page: 1,
         take: 20,
       });
+      expect(result).toEqual([mockProduct]);
     });
   });
 
   describe('deleteProduct', () => {
-    it('should call productsService.deleteProduct', async () => {
+    it('should call productsService.deleteProduct and return result', async () => {
       productsService.deleteProduct.mockResolvedValue(mockProduct);
 
-      await controller.deleteProduct(1);
+      const result = await controller.deleteProduct(1);
 
       expect(productsService.deleteProduct).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockProduct);
     });
   });
 
   describe('createPackagingSpec', () => {
-    it('should call packagingSpecsService.createPackagingSpec', async () => {
+    it('should call packagingSpecsService.createPackagingSpec and return result', async () => {
       packagingSpecsService.createPackagingSpec.mockResolvedValue(
         mockPackagingSpec,
       );
       const dto = { name: '소포장', gramPerPack: 500 };
 
-      await controller.createPackagingSpec(1, dto);
+      const result = await controller.createPackagingSpec(1, dto);
 
       expect(packagingSpecsService.createPackagingSpec).toHaveBeenCalledWith(
         1,
         dto,
       );
+      expect(result).toEqual(mockPackagingSpec);
     });
   });
 
   describe('getPackagingSpecs', () => {
-    it('should call packagingSpecsService.getPackagingSpecsByProductId', async () => {
+    it('should call packagingSpecsService.getPackagingSpecsByProductId and return result', async () => {
       packagingSpecsService.getPackagingSpecsByProductId.mockResolvedValue([
         mockPackagingSpec,
       ]);
 
-      await controller.getPackagingSpecs(1);
+      const result = await controller.getPackagingSpecs(1);
 
       expect(
         packagingSpecsService.getPackagingSpecsByProductId,
       ).toHaveBeenCalledWith(1);
+      expect(result).toEqual([mockPackagingSpec]);
     });
   });
 });

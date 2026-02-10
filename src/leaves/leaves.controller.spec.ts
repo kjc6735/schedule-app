@@ -30,56 +30,61 @@ describe('LeavesController', () => {
   });
 
   describe('findLeaveById', () => {
-    it('should call service.findLeaveById with leaveId', async () => {
+    it('should call service.findLeaveById and return result', async () => {
       service.findLeaveById.mockResolvedValue(mockLeave);
 
-      await controller.findLeaveById(1);
+      const result = await controller.findLeaveById(1);
 
       expect(service.findLeaveById).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockLeave);
     });
   });
 
   describe('findLeavesByDateRange', () => {
-    it('should call service.findLeavesByDateRange with dto', async () => {
+    it('should call service.findLeavesByDateRange and return result', async () => {
       const dto = {
         start: new Date('2026-02-01'),
         end: new Date('2026-02-28'),
       };
       service.findLeavesByDateRange.mockResolvedValue([mockLeave]);
 
-      await controller.findLeavesByDateRange(dto);
+      const result = await controller.findLeavesByDateRange(dto);
 
       expect(service.findLeavesByDateRange).toHaveBeenCalledWith(dto);
+      expect(result).toEqual([mockLeave]);
     });
   });
 
   describe('updateStatusByAdmin', () => {
-    it('should call service.updateStatusByAdmin with user.sub, leaveId, and body', async () => {
-      service.updateStatusByAdmin.mockResolvedValue(mockLeave);
+    it('should call service.updateStatusByAdmin and return result', async () => {
+      const updatedLeave = { ...mockLeave, status: 'approved' };
+      service.updateStatusByAdmin.mockResolvedValue(updatedLeave);
       const body = { status: 'approved' as any };
 
-      await controller.updateStatusByAdmin(1, mockAdminJwtPayload as any, body);
+      const result = await controller.updateStatusByAdmin(1, mockAdminJwtPayload as any, body);
 
       expect(service.updateStatusByAdmin).toHaveBeenCalledWith(
         mockAdminJwtPayload.sub,
         1,
         body,
       );
+      expect(result).toEqual(updatedLeave);
     });
   });
 
   describe('updateLeaveByUser', () => {
-    it('should call service.updateLeaveByUser with user.sub, leaveId, and body', async () => {
+    it('should call service.updateLeaveByUser and return result', async () => {
       service.updateLeaveByUser.mockResolvedValue(mockLeave);
       const body = { reason: '변경사유' };
 
-      await controller.updateLeaveByUser(1, mockJwtPayload as any, body);
+      const result = await controller.updateLeaveByUser(1, mockJwtPayload as any, body);
 
       expect(service.updateLeaveByUser).toHaveBeenCalledWith(
         mockJwtPayload.sub,
         1,
         body,
       );
+      expect(result).toEqual(mockLeave);
     });
   });
 
@@ -87,12 +92,13 @@ describe('LeavesController', () => {
     it('should call service.deleteLeave with user.sub and leaveId', async () => {
       service.deleteLeave.mockResolvedValue(undefined);
 
-      await controller.deleteLeave(1, mockJwtPayload as any);
+      const result = await controller.deleteLeave(1, mockJwtPayload as any);
 
       expect(service.deleteLeave).toHaveBeenCalledWith(
         mockJwtPayload.sub,
         1,
       );
+      expect(result).toBeUndefined();
     });
   });
 });

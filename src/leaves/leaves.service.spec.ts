@@ -52,6 +52,10 @@ describe('LeavesService', () => {
         data: expect.objectContaining({
           status: 'requested',
           totalDays: 0,
+          userId: 1,
+          startDate: new Date('2026-02-10'),
+          endDate: new Date('2026-02-12'),
+          leaveType: 'annual',
         }),
       });
     });
@@ -64,7 +68,9 @@ describe('LeavesService', () => {
 
       await expect(
         service.updateStatusByAdmin(999, 1, { status: 'approved' as any }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('존재하지 않는 유저입니다.'),
+      );
     });
 
     it('should throw NotFoundException when leave not found', async () => {
@@ -73,7 +79,9 @@ describe('LeavesService', () => {
 
       await expect(
         service.updateStatusByAdmin(2, 999, { status: 'approved' as any }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(
+        new NotFoundException('존재하지 않는 휴가 기록입니다.'),
+      );
     });
 
     it('should throw UnauthorizedException when user is not admin', async () => {
@@ -82,16 +90,16 @@ describe('LeavesService', () => {
 
       await expect(
         service.updateStatusByAdmin(1, 1, { status: 'approved' as any }),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(
+        new UnauthorizedException('수정 권한이 없습니다.'),
+      );
     });
 
     it('should update leave status when admin', async () => {
       usersService.getUser.mockResolvedValue(mockAdminUser);
       prisma.leave.findUnique.mockResolvedValue(mockLeave);
-      prisma.leave.update.mockResolvedValue({
-        ...mockLeave,
-        status: 'approved',
-      });
+      const updatedLeave = { ...mockLeave, status: 'approved' as const };
+      prisma.leave.update.mockResolvedValue(updatedLeave);
 
       const result = await service.updateStatusByAdmin(2, 1, {
         status: 'approved' as any,
@@ -101,7 +109,7 @@ describe('LeavesService', () => {
         where: { id: 1 },
         data: { status: 'approved' },
       });
-      expect(result.status).toBe('approved');
+      expect(result).toEqual(updatedLeave);
     });
   });
 
@@ -109,12 +117,13 @@ describe('LeavesService', () => {
     it('should update leave with userId in where condition', async () => {
       prisma.leave.update.mockResolvedValue(mockLeave);
 
-      await service.updateLeaveByUser(1, 1, { reason: '변경사유' });
+      const result = await service.updateLeaveByUser(1, 1, { reason: '변경사유' });
 
       expect(prisma.leave.update).toHaveBeenCalledWith({
         where: { id: 1, userId: 1 },
         data: { reason: '변경사유' },
       });
+      expect(result).toEqual(mockLeave);
     });
   });
 
@@ -149,7 +158,7 @@ describe('LeavesService', () => {
       prisma.leave.findUnique.mockResolvedValue(mockLeave);
 
       await expect(service.deleteLeave(3, 1)).rejects.toThrow(
-        UnauthorizedException,
+        new UnauthorizedException('수정 권한이 없습니다.'),
       );
     });
 
@@ -158,7 +167,7 @@ describe('LeavesService', () => {
       prisma.leave.findUnique.mockResolvedValue(mockLeave);
 
       await expect(service.deleteLeave(999, 1)).rejects.toThrow(
-        NotFoundException,
+        new NotFoundException('존재하지 않는 유저입니다.'),
       );
     });
 
@@ -167,7 +176,7 @@ describe('LeavesService', () => {
       prisma.leave.findUnique.mockResolvedValue(null);
 
       await expect(service.deleteLeave(1, 999)).rejects.toThrow(
-        NotFoundException,
+        new NotFoundException('존재하지 않는 휴가 기록입니다.'),
       );
     });
   });

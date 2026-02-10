@@ -41,7 +41,7 @@ describe('ProductionPlansService', () => {
         ...mockProductionPlan,
       });
 
-      await service.createProductionPlan(dto, 2);
+      const result = await service.createProductionPlan(dto, 2);
 
       expect(prisma.productionPlan.create).toHaveBeenCalledWith({
         data: {
@@ -49,19 +49,22 @@ describe('ProductionPlansService', () => {
           createdById: 2,
         },
       });
+      expect(result).toEqual(mockProductionPlan);
     });
   });
 
   describe('updateProductionPlan', () => {
     it('should update production plan by id', async () => {
-      prisma.productionPlan.update.mockResolvedValue(mockProductionPlan);
+      const updated = { ...mockProductionPlan, resultAmountGram: 9500 };
+      prisma.productionPlan.update.mockResolvedValue(updated);
 
-      await service.updateProductionPlan(1, { resultAmountGram: 9500 });
+      const result = await service.updateProductionPlan(1, { resultAmountGram: 9500 });
 
       expect(prisma.productionPlan.update).toHaveBeenCalledWith({
         data: { resultAmountGram: 9500 },
         where: { id: 1 },
       });
+      expect(result).toEqual(updated);
     });
   });
 
@@ -69,7 +72,7 @@ describe('ProductionPlansService', () => {
     it('should find production plan with product and packagingSpec', async () => {
       prisma.productionPlan.findUnique.mockResolvedValue(mockProductionPlan);
 
-      await service.getProductionPlan(1);
+      const result = await service.getProductionPlan(1);
 
       expect(prisma.productionPlan.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
@@ -78,6 +81,7 @@ describe('ProductionPlansService', () => {
           packagingSpec: true,
         },
       });
+      expect(result).toEqual(mockProductionPlan);
     });
   });
 
@@ -85,7 +89,7 @@ describe('ProductionPlansService', () => {
     it('should query without date filter when date is undefined', async () => {
       prisma.productionPlan.findMany.mockResolvedValue([mockProductionPlan]);
 
-      await service.getProductionPlans({ page: 1, take: 20 });
+      const result = await service.getProductionPlans({ page: 1, take: 20 });
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith({
         where: undefined,
@@ -93,13 +97,14 @@ describe('ProductionPlansService', () => {
         skip: 0,
         take: 21,
       });
+      expect(result).toEqual([mockProductionPlan]);
     });
 
     it('should query with date filter when date is provided', async () => {
       const date = new Date('2026-02-01');
       prisma.productionPlan.findMany.mockResolvedValue([mockProductionPlan]);
 
-      await service.getProductionPlans({ page: 1, take: 20 }, date);
+      const result = await service.getProductionPlans({ page: 1, take: 20 }, date);
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith({
         where: { productionDate: date },
@@ -107,12 +112,13 @@ describe('ProductionPlansService', () => {
         skip: 0,
         take: 21,
       });
+      expect(result).toEqual([mockProductionPlan]);
     });
 
     it('should calculate pagination correctly', async () => {
       prisma.productionPlan.findMany.mockResolvedValue([]);
 
-      await service.getProductionPlans({ page: 3, take: 10 });
+      const result = await service.getProductionPlans({ page: 3, take: 10 });
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -120,6 +126,7 @@ describe('ProductionPlansService', () => {
           take: 11,
         }),
       );
+      expect(result).toEqual([]);
     });
   });
 
@@ -127,11 +134,12 @@ describe('ProductionPlansService', () => {
     it('should delete production plan by id', async () => {
       prisma.productionPlan.delete.mockResolvedValue(mockProductionPlan);
 
-      await service.deleteProductionPlan(1);
+      const result = await service.deleteProductionPlan(1);
 
       expect(prisma.productionPlan.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+      expect(result).toEqual(mockProductionPlan);
     });
   });
 });

@@ -34,9 +34,10 @@ describe('ProductsService', () => {
         name: '새제품',
         packagingSpecs: [{ name: '소포장', gramPerPack: 500 }],
       };
-      prisma.product.create.mockResolvedValue({ id: 1, ...dto });
+      const created = { id: 1, ...dto };
+      prisma.product.create.mockResolvedValue(created);
 
-      await service.createProduct(dto);
+      const result = await service.createProduct(dto);
 
       expect(prisma.product.create).toHaveBeenCalledWith({
         data: {
@@ -48,19 +49,22 @@ describe('ProductsService', () => {
           },
         },
       });
+      expect(result).toEqual(created);
     });
   });
 
   describe('updateProduct', () => {
     it('should call prisma.product.update with correct args', async () => {
-      prisma.product.update.mockResolvedValue({ ...mockProduct, name: '수정됨' });
+      const updated = { ...mockProduct, name: '수정됨' };
+      prisma.product.update.mockResolvedValue(updated);
 
-      await service.updateProduct(1, { name: '수정됨' });
+      const result = await service.updateProduct(1, { name: '수정됨' });
 
       expect(prisma.product.update).toHaveBeenCalledWith({
         data: { name: '수정됨' },
         where: { id: 1 },
       });
+      expect(result).toEqual(updated);
     });
   });
 
@@ -81,11 +85,12 @@ describe('ProductsService', () => {
     it('should call prisma.product.findUnique with productId', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
 
-      await service.getProductWithPackagingSpecs(1);
+      const result = await service.getProductWithPackagingSpecs(1);
 
       expect(prisma.product.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+      expect(result).toEqual(mockProduct);
     });
   });
 
@@ -93,12 +98,13 @@ describe('ProductsService', () => {
     it('should calculate pagination correctly', async () => {
       prisma.product.findMany.mockResolvedValue([mockProduct]);
 
-      await service.getProducts({ page: 2, take: 10 });
+      const result = await service.getProducts({ page: 2, take: 10 });
 
       expect(prisma.product.findMany).toHaveBeenCalledWith({
         skip: 10,
         take: 11,
       });
+      expect(result).toEqual([mockProduct]);
     });
   });
 
@@ -106,11 +112,12 @@ describe('ProductsService', () => {
     it('should call prisma.product.delete with id', async () => {
       prisma.product.delete.mockResolvedValue(mockProduct);
 
-      await service.deleteProduct(1);
+      const result = await service.deleteProduct(1);
 
       expect(prisma.product.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+      expect(result).toEqual(mockProduct);
     });
   });
 });

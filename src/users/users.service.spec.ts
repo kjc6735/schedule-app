@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { mockUser } from '../../test/helpers/fixtures';
 import {
   createMockPrismaService,
   MockPrismaService,
 } from '../../test/helpers/mock-prisma';
-import { mockUser } from '../../test/helpers/fixtures';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
@@ -15,10 +15,7 @@ describe('UsersService', () => {
     prisma = createMockPrismaService();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsersService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [UsersService, { provide: PrismaService, useValue: prisma }],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
@@ -53,12 +50,13 @@ describe('UsersService', () => {
     it('should calculate skip correctly and use take+1', async () => {
       prisma.user.findMany.mockResolvedValue([mockUser]);
 
-      await service.getUsers({ page: 2, take: 10 });
+      const result = await service.getUsers({ page: 2, take: 10 });
 
       expect(prisma.user.findMany).toHaveBeenCalledWith({
         skip: 10,
         take: 11,
       });
+      expect(result).toHaveLength(1);
     });
 
     it('should return UserDto array (without password)', async () => {
@@ -68,7 +66,17 @@ describe('UsersService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0]).not.toHaveProperty('password');
-      expect(result[0]).toHaveProperty('userId', 'testuser');
+      expect(result[0]).toEqual({
+        id: mockUser.id,
+        userId: mockUser.userId,
+        name: mockUser.name,
+        phone: mockUser.phone,
+        gender: mockUser.gender,
+        role: mockUser.role,
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
+        deletedAt: mockUser.deletedAt,
+      });
     });
   });
 });

@@ -32,7 +32,7 @@ describe('PackagingSpecsService', () => {
     it('should create packaging spec with productId', async () => {
       prisma.packagingSpec.create.mockResolvedValue(mockPackagingSpec);
 
-      await service.createPackagingSpec(1, {
+      const result = await service.createPackagingSpec(1, {
         name: '소포장',
         gramPerPack: 500,
       });
@@ -44,22 +44,22 @@ describe('PackagingSpecsService', () => {
           productId: 1,
         },
       });
+      expect(result).toEqual(mockPackagingSpec);
     });
   });
 
   describe('updatePackagingSpec', () => {
     it('should update packaging spec by id', async () => {
-      prisma.packagingSpec.update.mockResolvedValue({
-        ...mockPackagingSpec,
-        name: '대포장',
-      });
+      const updated = { ...mockPackagingSpec, name: '대포장' };
+      prisma.packagingSpec.update.mockResolvedValue(updated);
 
-      await service.updatePackagingSpec(1, { name: '대포장' });
+      const result = await service.updatePackagingSpec(1, { name: '대포장' });
 
       expect(prisma.packagingSpec.update).toHaveBeenCalledWith({
         data: { name: '대포장' },
         where: { id: 1 },
       });
+      expect(result).toEqual(updated);
     });
   });
 
@@ -67,11 +67,12 @@ describe('PackagingSpecsService', () => {
     it('should delete packaging spec by id', async () => {
       prisma.packagingSpec.delete.mockResolvedValue(mockPackagingSpec);
 
-      await service.deletePackagingSpec(1);
+      const result = await service.deletePackagingSpec(1);
 
       expect(prisma.packagingSpec.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+      expect(result).toEqual(mockPackagingSpec);
     });
   });
 

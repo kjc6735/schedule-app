@@ -51,13 +51,17 @@ describe('RolesGuard', () => {
     reflector.getAllAndOverride.mockReturnValue(['manager', 'owner']);
     const context = createMockExecutionContext({ role: 'worker' });
 
-    expect(() => guard.canActivate(context)).toThrow(UnauthorizedException);
+    expect(() => guard.canActivate(context)).toThrow(
+      new UnauthorizedException('권한이 없습니다.'),
+    );
   });
 
   it('should throw UnauthorizedException when user has no role', () => {
     reflector.getAllAndOverride.mockReturnValue(['manager', 'owner']);
     const context = createMockExecutionContext({} as any);
 
-    expect(() => guard.canActivate(context)).toThrow(UnauthorizedException);
+    expect(() => guard.canActivate(context)).toThrow(
+      new UnauthorizedException('권한이 없습니다.'),
+    );
   });
 });

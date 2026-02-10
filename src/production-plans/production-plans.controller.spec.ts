@@ -31,7 +31,7 @@ describe('ProductionPlansController', () => {
   });
 
   describe('createProductionPlan', () => {
-    it('should call service.createProductionPlan with dto and createdById', () => {
+    it('should call service.createProductionPlan and return result', async () => {
       service.createProductionPlan.mockResolvedValue(mockProductionPlan);
       const dto = {
         productionDate: new Date('2026-02-01'),
@@ -42,55 +42,61 @@ describe('ProductionPlansController', () => {
       };
       const req = { user: { sub: 2 } } as any;
 
-      controller.createProductionPlan(dto as any, req);
+      const result = await controller.createProductionPlan(dto as any, req);
 
       expect(service.createProductionPlan).toHaveBeenCalledWith(dto, 2);
+      expect(result).toEqual(mockProductionPlan);
     });
   });
 
   describe('updateProductionPlan', () => {
-    it('should call service.updateProductionPlan with id and dto', () => {
-      service.updateProductionPlan.mockResolvedValue(mockProductionPlan);
+    it('should call service.updateProductionPlan and return result', async () => {
+      const updated = { ...mockProductionPlan, resultAmountGram: 9500 };
+      service.updateProductionPlan.mockResolvedValue(updated);
 
-      controller.updateProductionPlan(1, { resultAmountGram: 9500 } as any);
+      const result = await controller.updateProductionPlan(1, { resultAmountGram: 9500 } as any);
 
       expect(service.updateProductionPlan).toHaveBeenCalledWith(1, {
         resultAmountGram: 9500,
       });
+      expect(result).toEqual(updated);
     });
   });
 
   describe('getProductionPlan', () => {
-    it('should call service.getProductionPlan with id', () => {
+    it('should call service.getProductionPlan and return result', async () => {
       service.getProductionPlan.mockResolvedValue(mockProductionPlan);
 
-      controller.getProductionPlan(1);
+      const result = await controller.getProductionPlan(1);
 
       expect(service.getProductionPlan).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockProductionPlan);
     });
   });
 
   describe('getProductionPlans', () => {
-    it('should call service.getProductionPlans with pagination and date', () => {
+    it('should call service.getProductionPlans and return result', async () => {
       service.getProductionPlans.mockResolvedValue([mockProductionPlan]);
       const date = new Date('2026-02-01');
 
-      controller.getProductionPlans({ page: 1, take: 20 }, date);
+      const result = await controller.getProductionPlans({ page: 1, take: 20 }, date);
 
       expect(service.getProductionPlans).toHaveBeenCalledWith(
         { page: 1, take: 20 },
         date,
       );
+      expect(result).toEqual([mockProductionPlan]);
     });
   });
 
   describe('deleteProductionPlan', () => {
-    it('should call service.deleteProductionPlan with id', () => {
+    it('should call service.deleteProductionPlan and return result', async () => {
       service.deleteProductionPlan.mockResolvedValue(mockProductionPlan);
 
-      controller.deleteProductionPlan(1);
+      const result = await controller.deleteProductionPlan(1);
 
       expect(service.deleteProductionPlan).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockProductionPlan);
     });
   });
 });

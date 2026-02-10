@@ -72,7 +72,7 @@ describe('AuthGuard', () => {
     const context = createMockExecutionContext();
 
     await expect(guard.canActivate(context)).rejects.toThrow(
-      UnauthorizedException,
+      new UnauthorizedException('접속할 수 없습니다.'),
     );
   });
 
@@ -83,7 +83,7 @@ describe('AuthGuard', () => {
     });
 
     await expect(guard.canActivate(context)).rejects.toThrow(
-      UnauthorizedException,
+      new UnauthorizedException('접속할 수 없습니다.'),
     );
   });
 
