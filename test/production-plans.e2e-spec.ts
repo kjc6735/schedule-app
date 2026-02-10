@@ -47,11 +47,17 @@ describe('ProductionPlans (e2e)', () => {
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockProductionPlan.id,
+          productId: mockProductionPlan.productId,
+          targetAmountGram: mockProductionPlan.targetAmountGram,
+        }),
+      );
     });
 
     it('should return 401 when worker tries to create', async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/production-plans')
         .set('Authorization', `Bearer ${workerToken}`)
         .send({
@@ -62,6 +68,13 @@ describe('ProductionPlans (e2e)', () => {
           memo: '메모',
         })
         .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+          message: '권한이 없습니다.',
+        }),
+      );
     });
   });
 
@@ -74,7 +87,13 @@ describe('ProductionPlans (e2e)', () => {
         .set('Authorization', `Bearer ${workerToken}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toEqual(
+        expect.objectContaining({
+          id: mockProductionPlan.id,
+          productId: mockProductionPlan.productId,
+        }),
+      );
     });
   });
 
@@ -87,7 +106,13 @@ describe('ProductionPlans (e2e)', () => {
         .set('Authorization', `Bearer ${workerToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockProductionPlan.id,
+          productId: mockProductionPlan.productId,
+          targetAmountGram: mockProductionPlan.targetAmountGram,
+        }),
+      );
     });
   });
 
@@ -98,19 +123,33 @@ describe('ProductionPlans (e2e)', () => {
         resultAmountGram: 9500,
       });
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch('/production-plans/1')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ resultAmountGram: 9500 })
         .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockProductionPlan.id,
+          resultAmountGram: 9500,
+        }),
+      );
     });
 
     it('should return 401 when worker tries to update', async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch('/production-plans/1')
         .set('Authorization', `Bearer ${workerToken}`)
         .send({ resultAmountGram: 9500 })
         .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+          message: '권한이 없습니다.',
+        }),
+      );
     });
   });
 
@@ -125,10 +164,17 @@ describe('ProductionPlans (e2e)', () => {
     });
 
     it('should return 401 when worker tries to delete', async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete('/production-plans/1')
         .set('Authorization', `Bearer ${workerToken}`)
         .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+          message: '권한이 없습니다.',
+        }),
+      );
     });
   });
 });

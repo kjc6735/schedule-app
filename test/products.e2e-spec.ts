@@ -41,14 +41,25 @@ describe('Products (e2e)', () => {
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockProduct.id,
+          name: mockProduct.name,
+        }),
+      );
     });
 
     it('should return 401 without token', async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/products')
         .send({ name: '새제품', packagingSpecs: [] })
         .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+        }),
+      );
     });
   });
 
@@ -61,7 +72,13 @@ describe('Products (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toEqual(
+        expect.objectContaining({
+          id: mockProduct.id,
+          name: mockProduct.name,
+        }),
+      );
     });
   });
 
@@ -74,7 +91,12 @@ describe('Products (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('name');
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockProduct.id,
+          name: mockProduct.name,
+        }),
+      );
     });
   });
 
@@ -82,10 +104,17 @@ describe('Products (e2e)', () => {
     it('should delete product when admin', async () => {
       prisma.product.delete.mockResolvedValue(mockProduct);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete('/products/1')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockProduct.id,
+          name: mockProduct.name,
+        }),
+      );
     });
   });
 
@@ -99,7 +128,13 @@ describe('Products (e2e)', () => {
         .send({ name: '소포장', gramPerPack: 500 })
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockPackagingSpec.id,
+          name: mockPackagingSpec.name,
+          gramPerPack: mockPackagingSpec.gramPerPack,
+        }),
+      );
     });
   });
 
@@ -112,7 +147,14 @@ describe('Products (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toEqual(
+        expect.objectContaining({
+          id: mockPackagingSpec.id,
+          name: mockPackagingSpec.name,
+          gramPerPack: mockPackagingSpec.gramPerPack,
+        }),
+      );
     });
   });
 });

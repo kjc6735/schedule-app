@@ -44,17 +44,26 @@ describe('Auth (e2e)', () => {
         .send({ userId: 'testuser', password: 'password123' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('accessToken');
-      expect(response.body).toHaveProperty('refreshToken');
+      expect(response.body).toEqual({
+        accessToken: expect.any(String),
+        refreshToken: expect.any(String),
+      });
     });
 
     it('should return 400 on invalid credentials', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/auth/login')
         .send({ userId: 'unknown', password: 'wrong' })
         .expect(400);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 400,
+          message: '아이디와 비밀번호를 다시 확인해주세요.',
+        }),
+      );
     });
   });
 
@@ -81,19 +90,33 @@ describe('Auth (e2e)', () => {
     });
 
     it('should return 400 when passwords do not match', async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/auth/register')
         .send({ ...registerDto, passwordConfirm: 'different' })
         .expect(400);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 400,
+          message: '비밀번호를 다시 확인해주세요.',
+        }),
+      );
     });
 
     it('should return 401 when userId already exists', async () => {
       prisma.user.findUnique.mockResolvedValueOnce(mockUser);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/auth/register')
         .send(registerDto)
         .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+          message: '이미 사용중인 아이디입니다.',
+        }),
+      );
     });
   });
 });

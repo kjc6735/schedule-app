@@ -40,11 +40,26 @@ describe('Leaves (e2e)', () => {
         .set('Authorization', `Bearer ${workerToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('id');
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockLeave.id,
+          userId: mockLeave.userId,
+          status: mockLeave.status,
+          leaveType: mockLeave.leaveType,
+        }),
+      );
     });
 
     it('should return 401 without token', async () => {
-      await request(app.getHttpServer()).get('/leaves/1').expect(401);
+      const response = await request(app.getHttpServer())
+        .get('/leaves/1')
+        .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+        }),
+      );
     });
   });
 
@@ -58,7 +73,14 @@ describe('Leaves (e2e)', () => {
         .set('Authorization', `Bearer ${workerToken}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toEqual(
+        expect.objectContaining({
+          id: mockLeave.id,
+          userId: mockLeave.userId,
+          status: mockLeave.status,
+        }),
+      );
     });
   });
 
@@ -71,34 +93,56 @@ describe('Leaves (e2e)', () => {
         status: 'approved',
       });
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch('/leaves/1/status')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ status: 'approved' })
         .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockLeave.id,
+          status: 'approved',
+        }),
+      );
     });
 
     it('should return 401 when worker tries to update status', async () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
       prisma.leave.findUnique.mockResolvedValue(mockLeave);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch('/leaves/1/status')
         .set('Authorization', `Bearer ${workerToken}`)
         .send({ status: 'approved' })
         .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+          message: '수정 권한이 없습니다.',
+        }),
+      );
     });
   });
 
   describe('PATCH /leaves/:leaveId', () => {
     it('should update leave by user', async () => {
-      prisma.leave.update.mockResolvedValue(mockLeave);
+      const updatedLeave = { ...mockLeave, reason: '변경사유' };
+      prisma.leave.update.mockResolvedValue(updatedLeave);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch('/leaves/1')
         .set('Authorization', `Bearer ${workerToken}`)
         .send({ reason: '변경사유' })
         .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockLeave.id,
+          reason: '변경사유',
+        }),
+      );
     });
   });
 
@@ -126,7 +170,15 @@ describe('Leaves (e2e)', () => {
     });
 
     it('should return 401 without token', async () => {
-      await request(app.getHttpServer()).delete('/leaves/1').expect(401);
+      const response = await request(app.getHttpServer())
+        .delete('/leaves/1')
+        .expect(401);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 401,
+        }),
+      );
     });
   });
 });
