@@ -47,7 +47,7 @@ import { AuthService } from './auth.service';
     {
       provide: 'SALT_OR_ROUNDS',
       useFactory: (config: ConfigService) =>
-        config.get<string>('SALT_OR_ROUNDS'),
+        parseInt(config.get<string>('SALT_OR_ROUNDS') ?? '10', 10),
       inject: [ConfigService],
     },
   ],
