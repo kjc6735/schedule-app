@@ -71,7 +71,7 @@ export class ProductsController {
     description: '인증 실패 또는 권한 없음 (관리자만 가능)',
   })
   async getProducts(@Query() pagination: PaginationDto) {
-    return this.productsService.getProducts(pagination);
+    return this.productsService.getProductsWithPackagingSpecs(pagination);
   }
 
   @Delete(':productId')

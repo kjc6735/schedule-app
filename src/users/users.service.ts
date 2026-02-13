@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from 'generated/prisma/client';
+import { paginate } from 'src/common/dto/paginated-response.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getUser(where: Prisma.UserWhereUniqueInput) {
-    return this.prisma.user.findUnique({ where });
+    const user = await this.prisma.user.findUnique({ where });
+    return user;
   }
 
   async getUsers({ page = 1, take = 20 }: { page: number; take: number }) {
@@ -19,8 +20,6 @@ export class UsersService {
       take: take + 1,
     });
 
-    const users = data.map((user) => UserDto.from(user));
-
-    return users;
+    return paginate(data, take);
   }
 }

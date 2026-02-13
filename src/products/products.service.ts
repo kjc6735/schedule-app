@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { paginate } from 'src/common/dto/paginated-response.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProduct, ProductId, UpdateProduct } from 'src/types/product';
@@ -30,6 +31,9 @@ export class ProductsService {
   async getProductWithPackagingSpecs(productId: ProductId) {
     return this.prisma.product.findUnique({
       where: { id: productId },
+      include: {
+        packagingSpecs: true,
+      },
     });
   }
 
@@ -42,10 +46,26 @@ export class ProductsService {
   async getProducts({ take, page }: PaginationDto) {
     const skip = (page - 1) * take;
 
-    return this.prisma.product.findMany({
+    const data = await this.prisma.product.findMany({
       skip,
       take: take + 1,
     });
+
+    return paginate(data, take);
+  }
+
+  async getProductsWithPackagingSpecs({ take, page }: PaginationDto) {
+    const skip = (page - 1) * take;
+
+    const data = await this.prisma.product.findMany({
+      skip,
+      take: take + 1,
+      include: {
+        packagingSpecs: true,
+      },
+    });
+
+    return paginate(data, take);
   }
 
   async deleteProduct(id: ProductId) {
