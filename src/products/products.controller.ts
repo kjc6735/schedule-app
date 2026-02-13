@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreatePackagingSpecRequestDto } from 'src/packaging-specs/dto/create-packaging-spec.request.dto';
 import { PackagingSpecsService } from 'src/packaging-specs/packaging-specs.service';
 import { CreateProductRequestDto } from './dto/create-product.request.dto';
+import { UpdateProductRequestDto } from './dto/update-product.request.dto';
 import { ProductsService } from './products.service';
 
 @ApiTags('제품')
@@ -72,6 +74,22 @@ export class ProductsController {
   })
   async getProducts(@Query() pagination: PaginationDto) {
     return this.productsService.getProductsWithPackagingSpecs(pagination);
+  }
+
+  @Patch(':productId')
+  @ApiOperation({ summary: '제품 수정' })
+  @ApiParam({ name: 'productId', description: '제품 ID', example: 1 })
+  @ApiResponse({ status: 200, description: '제품 수정 성공' })
+  @ApiResponse({
+    status: 401,
+    description: '인증 실패 또는 권한 없음 (관리자만 가능)',
+  })
+  @ApiResponse({ status: 404, description: '제품을 찾을 수 없음' })
+  async updateProduct(
+    @Param('productId') productId: number,
+    @Body() dto: UpdateProductRequestDto,
+  ) {
+    return this.productsService.updateProduct(productId, dto);
   }
 
   @Delete(':productId')

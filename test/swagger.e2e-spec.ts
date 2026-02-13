@@ -604,7 +604,7 @@ describe('Swagger (e2e)', () => {
           }
         }
       }
-      expect(count).toBe(24);
+      expect(count).toBe(25);
     });
   });
 });
