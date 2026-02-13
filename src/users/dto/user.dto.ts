@@ -6,4 +6,8 @@ export class UserDto {
 
     return rest;
   }
+
+  static fromArray(users: User[]) {
+    return users ? users.map((user) => UserDto.from(user)) : [];
+  }
 }
