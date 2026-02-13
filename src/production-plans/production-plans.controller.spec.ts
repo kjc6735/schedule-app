@@ -75,8 +75,9 @@ describe('ProductionPlansController', () => {
   });
 
   describe('getProductionPlans', () => {
-    it('should call service.getProductionPlans and return result', async () => {
-      service.getProductionPlans.mockResolvedValue([mockProductionPlan]);
+    it('should call service.getProductionPlans and return paginated result', async () => {
+      const paginated = { data: [mockProductionPlan], hasNext: false };
+      service.getProductionPlans.mockResolvedValue(paginated);
       const date = new Date('2026-02-01');
 
       const result = await controller.getProductionPlans({ page: 1, take: 20 }, date);
@@ -85,7 +86,7 @@ describe('ProductionPlansController', () => {
         { page: 1, take: 20 },
         date,
       );
-      expect(result).toEqual([mockProductionPlan]);
+      expect(result).toEqual(paginated);
     });
   });
 

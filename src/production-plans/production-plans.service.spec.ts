@@ -97,7 +97,7 @@ describe('ProductionPlansService', () => {
         skip: 0,
         take: 21,
       });
-      expect(result).toEqual([mockProductionPlan]);
+      expect(result).toEqual({ data: [mockProductionPlan], hasNext: false });
     });
 
     it('should query with date filter when date is provided', async () => {
@@ -112,7 +112,7 @@ describe('ProductionPlansService', () => {
         skip: 0,
         take: 21,
       });
-      expect(result).toEqual([mockProductionPlan]);
+      expect(result).toEqual({ data: [mockProductionPlan], hasNext: false });
     });
 
     it('should calculate pagination correctly', async () => {
@@ -126,7 +126,17 @@ describe('ProductionPlansService', () => {
           take: 11,
         }),
       );
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], hasNext: false });
+    });
+
+    it('should return hasNext=true when more items exist', async () => {
+      const items = Array.from({ length: 21 }, () => mockProductionPlan);
+      prisma.productionPlan.findMany.mockResolvedValue(items);
+
+      const result = await service.getProductionPlans({ page: 1, take: 20 });
+
+      expect(result.data).toHaveLength(20);
+      expect(result.hasNext).toBe(true);
     });
   });
 

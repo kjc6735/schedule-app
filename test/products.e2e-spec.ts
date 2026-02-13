@@ -72,8 +72,9 @@ describe('Products (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0]).toEqual(
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.hasNext).toBe(false);
+      expect(response.body.data[0]).toEqual(
         expect.objectContaining({
           id: mockProduct.id,
           name: mockProduct.name,

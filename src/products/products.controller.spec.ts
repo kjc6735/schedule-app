@@ -14,6 +14,7 @@ describe('ProductsController', () => {
       createProduct: vi.fn(),
       getProductWithPackagingSpecs: vi.fn(),
       getProducts: vi.fn(),
+      getProductsWithPackagingSpecs: vi.fn(),
       deleteProduct: vi.fn(),
     };
     packagingSpecsService = {
@@ -64,16 +65,17 @@ describe('ProductsController', () => {
   });
 
   describe('getProducts', () => {
-    it('should call productsService.getProducts and return result', async () => {
-      productsService.getProducts.mockResolvedValue([mockProduct]);
+    it('should call productsService.getProductsWithPackagingSpecs and return paginated result', async () => {
+      const paginated = { data: [mockProduct], hasNext: false };
+      productsService.getProductsWithPackagingSpecs.mockResolvedValue(paginated);
 
       const result = await controller.getProducts({ page: 1, take: 20 });
 
-      expect(productsService.getProducts).toHaveBeenCalledWith({
+      expect(productsService.getProductsWithPackagingSpecs).toHaveBeenCalledWith({
         page: 1,
         take: 20,
       });
-      expect(result).toEqual([mockProduct]);
+      expect(result).toEqual(paginated);
     });
   });
 

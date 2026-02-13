@@ -82,13 +82,14 @@ describe('ProductsService', () => {
   });
 
   describe('getProductWithPackagingSpecs', () => {
-    it('should call prisma.product.findUnique with productId', async () => {
+    it('should call prisma.product.findUnique with productId and include packagingSpecs', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
 
       const result = await service.getProductWithPackagingSpecs(1);
 
       expect(prisma.product.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
+        include: { packagingSpecs: true },
       });
       expect(result).toEqual(mockProduct);
     });
@@ -104,7 +105,17 @@ describe('ProductsService', () => {
         skip: 10,
         take: 11,
       });
-      expect(result).toEqual([mockProduct]);
+      expect(result).toEqual({ data: [mockProduct], hasNext: false });
+    });
+
+    it('should return hasNext=true when more items exist', async () => {
+      const items = Array.from({ length: 11 }, () => mockProduct);
+      prisma.product.findMany.mockResolvedValue(items);
+
+      const result = await service.getProducts({ page: 1, take: 10 });
+
+      expect(result.data).toHaveLength(10);
+      expect(result.hasNext).toBe(true);
     });
   });
 

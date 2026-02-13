@@ -56,27 +56,27 @@ describe('UsersService', () => {
         skip: 10,
         take: 11,
       });
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
+      expect(result.hasNext).toBe(false);
     });
 
-    it('should return UserDto array (without password)', async () => {
+    it('should return paginated response with hasNext=true when more items exist', async () => {
+      const items = Array.from({ length: 21 }, () => mockUser);
+      prisma.user.findMany.mockResolvedValue(items);
+
+      const result = await service.getUsers({ page: 1, take: 20 });
+
+      expect(result.data).toHaveLength(20);
+      expect(result.hasNext).toBe(true);
+    });
+
+    it('should return paginated response with hasNext=false when no more items', async () => {
       prisma.user.findMany.mockResolvedValue([mockUser]);
 
       const result = await service.getUsers({ page: 1, take: 20 });
 
-      expect(result).toHaveLength(1);
-      expect(result[0]).not.toHaveProperty('password');
-      expect(result[0]).toEqual({
-        id: mockUser.id,
-        userId: mockUser.userId,
-        name: mockUser.name,
-        phone: mockUser.phone,
-        gender: mockUser.gender,
-        role: mockUser.role,
-        createdAt: mockUser.createdAt,
-        updatedAt: mockUser.updatedAt,
-        deletedAt: mockUser.deletedAt,
-      });
+      expect(result.data).toHaveLength(1);
+      expect(result.hasNext).toBe(false);
     });
   });
 });
