@@ -14,18 +14,20 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  const config = new DocumentBuilder()
-    .setTitle('생산 관리 시스템 API')
-    .setDescription('생산 계획, 제품, 포장 규격, 휴가 관리 API')
-    .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'access-token',
-    )
-    .build();
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('생산 관리 시스템 API')
+      .setDescription('생산 계획, 제품, 포장 규격, 휴가 관리 API')
+      .setVersion('1.0')
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        'access-token',
+      )
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api-docs', app, document);
+  }
 
   await app.listen(process.env.PORT ?? 3000);
 }
