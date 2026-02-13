@@ -24,7 +24,7 @@ export class LeavesService {
 
   async createLeave(data: CreateLeave) {
     // todo: 계산 넣어야함.
-    await this.prisma.leave.create({
+    return this.prisma.leave.create({
       data: {
         ...data,
         status: LeaveApproveStatus.requested,
@@ -72,8 +72,8 @@ export class LeavesService {
     if (!user) throw new NotFoundException('존재하지 않는 유저입니다.');
     if (!leave) throw new NotFoundException('존재하지 않는 휴가 기록입니다.');
 
-    const isOnwer = leave.userId === userId;
-    if (!isAdmin(user.role) && !isOnwer)
+    const isOwner = leave.userId === userId;
+    if (!isAdmin(user.role) && !isOwner)
       throw new UnauthorizedException('수정 권한이 없습니다.');
 
     await this.prisma.leave.delete({
