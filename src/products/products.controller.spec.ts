@@ -12,6 +12,7 @@ describe('ProductsController', () => {
   beforeEach(async () => {
     productsService = {
       createProduct: vi.fn(),
+      updateProduct: vi.fn(),
       getProductWithPackagingSpecs: vi.fn(),
       getProducts: vi.fn(),
       getProductsWithPackagingSpecs: vi.fn(),
@@ -76,6 +77,20 @@ describe('ProductsController', () => {
         take: 20,
       });
       expect(result).toEqual(paginated);
+    });
+  });
+
+  describe('updateProduct', () => {
+    it('should call productsService.updateProduct and return result', async () => {
+      const updated = { ...mockProduct, name: '수정됨' };
+      productsService.updateProduct.mockResolvedValue(updated);
+
+      const result = await controller.updateProduct(1, { name: '수정됨' });
+
+      expect(productsService.updateProduct).toHaveBeenCalledWith(1, {
+        name: '수정됨',
+      });
+      expect(result).toEqual(updated);
     });
   });
 

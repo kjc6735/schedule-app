@@ -101,6 +101,26 @@ describe('Products (e2e)', () => {
     });
   });
 
+  describe('PATCH /products/:productId', () => {
+    it('should update product when admin', async () => {
+      const updated = { ...mockProduct, name: '수정됨' };
+      prisma.product.update.mockResolvedValue(updated);
+
+      const response = await request(app.getHttpServer())
+        .patch('/products/1')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ name: '수정됨' })
+        .expect(200);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockProduct.id,
+          name: '수정됨',
+        }),
+      );
+    });
+  });
+
   describe('DELETE /products/:productId', () => {
     it('should delete product when admin', async () => {
       prisma.product.delete.mockResolvedValue(mockProduct);
