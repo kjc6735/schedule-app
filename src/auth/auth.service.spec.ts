@@ -29,12 +29,15 @@ describe('AuthService', () => {
   let service: AuthService;
   let prisma: MockPrismaService;
   let usersService: { getUser: ReturnType<typeof vi.fn> };
-  let jwtService: { signAsync: ReturnType<typeof vi.fn> };
+  let jwtService: {
+    signAsync: ReturnType<typeof vi.fn>;
+    verifyAsync: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     prisma = createMockPrismaService();
     usersService = { getUser: vi.fn() };
-    jwtService = { signAsync: vi.fn() };
+    jwtService = { signAsync: vi.fn(), verifyAsync: vi.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -162,6 +165,66 @@ describe('AuthService', () => {
 
       await expect(service.register(registerDto)).rejects.toThrow(
         new InternalServerErrorException('서버오류. 잠시 후 다시 시도해주세요'),
+      );
+    });
+  });
+
+  describe('refresh', () => {
+    const validPayload = {
+      sub: mockUser.id,
+      userId: mockUser.userId,
+      role: mockUser.role,
+      type: 'refresh_token',
+      iat: 0,
+      exp: 9999999999,
+    };
+
+    it('should return new accessToken on valid refresh token', async () => {
+      jwtService.verifyAsync.mockResolvedValue(validPayload);
+      usersService.getUser.mockResolvedValue(mockUser);
+      jwtService.signAsync.mockResolvedValue('new-access-token');
+
+      const result = await service.refresh('valid-refresh-token');
+
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith('valid-refresh-token', {
+        secret: 'refresh-secret',
+      });
+      expect(usersService.getUser).toHaveBeenCalledWith({ id: mockUser.id });
+      expect(result).toEqual({ accessToken: 'new-access-token' });
+    });
+
+    it('should throw UnauthorizedException when token type is not refresh_token', async () => {
+      jwtService.verifyAsync.mockResolvedValue({ ...validPayload, type: 'access_token' });
+
+      await expect(service.refresh('wrong-type-token')).rejects.toThrow(
+        new UnauthorizedException('리프레시 토큰이 아닙니다.'),
+      );
+    });
+
+    it('should throw UnauthorizedException when user not found', async () => {
+      jwtService.verifyAsync.mockResolvedValue(validPayload);
+      usersService.getUser.mockResolvedValue(null);
+
+      await expect(service.refresh('valid-refresh-token')).rejects.toThrow(
+        new UnauthorizedException('존재하지 않는 사용자입니다.'),
+      );
+    });
+
+    it('should throw UnauthorizedException when token is expired', async () => {
+      const { TokenExpiredError } = await import('@nestjs/jwt');
+      jwtService.verifyAsync.mockRejectedValue(new TokenExpiredError('expired', new Date()));
+
+      await expect(service.refresh('expired-token')).rejects.toThrow(
+        new UnauthorizedException('리프레시 토큰이 만료되었습니다.'),
+      );
+    });
+
+    it('should throw UnauthorizedException when token is invalid', async () => {
+      const { JsonWebTokenError } = await import('@nestjs/jwt');
+      jwtService.verifyAsync.mockRejectedValue(new JsonWebTokenError('invalid'));
+
+      await expect(service.refresh('invalid-token')).rejects.toThrow(
+        new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.'),
       );
     });
   });

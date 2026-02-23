@@ -18,7 +18,11 @@ export class RegisterRequestDto {
   @IsNotEmpty()
   passwordConfirm: string;
 
-  @ApiProperty({ description: '성별', enum: ['male', 'female'], example: 'male' })
+  @ApiProperty({
+    description: '성별',
+    enum: ['male', 'female'],
+    example: 'male',
+  })
   @IsEnum(Gender)
   gender: 'male' | 'female';
 

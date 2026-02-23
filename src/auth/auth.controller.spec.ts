@@ -7,12 +7,14 @@ describe('AuthController', () => {
   let authService: {
     login: ReturnType<typeof vi.fn>;
     register: ReturnType<typeof vi.fn>;
+    refresh: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
     authService = {
       login: vi.fn(),
       register: vi.fn(),
+      refresh: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -37,6 +39,17 @@ describe('AuthController', () => {
 
       expect(authService.login).toHaveBeenCalledWith(dto);
       expect(result).toEqual(tokens);
+    });
+  });
+
+  describe('refresh', () => {
+    it('should call authService.refresh with refreshToken and return new accessToken', async () => {
+      authService.refresh.mockResolvedValue({ accessToken: 'new-at' });
+
+      const result = await controller.refresh({ refreshToken: 'rt' });
+
+      expect(authService.refresh).toHaveBeenCalledWith('rt');
+      expect(result).toEqual({ accessToken: 'new-at' });
     });
   });
 

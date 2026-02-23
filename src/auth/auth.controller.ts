@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorator/public.decorator';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/login.request.dto';
+import { RefreshRequestDto } from './dto/refresh.request.dto';
 import { RegisterRequestDto } from './dto/register.request.dto';
 
 @ApiTags('인증')
@@ -26,6 +27,22 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '아이디 또는 비밀번호 불일치' })
   async login(@Body() loginRequestDto: LoginRequestDto) {
     return this.authService.login(loginRequestDto);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: '액세스 토큰 재발급' })
+  @ApiResponse({
+    status: 201,
+    description: '재발급 성공',
+    schema: {
+      properties: {
+        accessToken: { type: 'string', description: '새 JWT 액세스 토큰' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: '유효하지 않거나 만료된 리프레시 토큰' })
+  async refresh(@Body() dto: RefreshRequestDto) {
+    return this.authService.refresh(dto.refreshToken);
   }
 
   @Post('register')
