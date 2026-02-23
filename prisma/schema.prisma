@@ -25,7 +25,8 @@ model User {
   phone     String    @unique
   name      String
   role      Role      @default(worker)
-  productionPlans ProductionPlan[]
+  productionPlans   ProductionPlan[]
+  productionResults ProductionResult[]
 
   leaves  Leave[]
   @@map("users")
@@ -75,11 +76,30 @@ model ProductionPlan {
   updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
-  product       Product       @relation(fields: [productId], references: [id])
-  packagingSpec PackagingSpec @relation(fields: [packagingSpecId], references: [id])
-  createdBy     User          @relation(fields: [createdById], references: [id])
+  product          Product           @relation(fields: [productId], references: [id])
+  packagingSpec    PackagingSpec     @relation(fields: [packagingSpecId], references: [id])
+  createdBy        User              @relation(fields: [createdById], references: [id])
+  productionResult ProductionResult?
 
   @@map("production_plans")
+}
+
+model ProductionResult {
+  id                 Int      @id @default(autoincrement())
+  productionPlanId   Int      @unique @map("production_plan_id")
+  boxCount           Int      @map("box_count")
+  packsPerBox        Int      @map("packs_per_box")
+  remainingPackCount Int      @map("remaining_pack_count")
+  totalPackCount     Int      @map("total_pack_count")
+  totalAmountGram    Int      @map("total_amount_gram")
+  createdById        Int      @map("created_by_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  productionPlan ProductionPlan @relation(fields: [productionPlanId], references: [id])
+  createdBy      User           @relation(fields: [createdById], references: [id])
+
+  @@map("production_results")
 }
 
 model Leave {

@@ -20,6 +20,7 @@ export function createMockPrismaService() {
     },
     packagingSpec: createMockPrismaModel(),
     productionPlan: createMockPrismaModel(),
+    productionResult: createMockPrismaModel(),
     leave: createMockPrismaModel(),
   };
 }

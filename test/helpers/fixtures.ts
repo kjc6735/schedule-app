@@ -53,6 +53,19 @@ export const mockProductionPlan = {
   deletedAt: null,
 };
 
+export const mockProductionResult = {
+  id: 1,
+  productionPlanId: 1,
+  boxCount: 10,
+  packsPerBox: 5,
+  remainingPackCount: 3,
+  totalPackCount: 53,
+  totalAmountGram: 26500,
+  createdById: 1,
+  createdAt: new Date('2026-02-01'),
+  updatedAt: new Date('2026-02-01'),
+};
+
 export const mockLeave = {
   id: 1,
   userId: 1,
