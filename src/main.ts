@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filter/prisma-exception.filter';
+import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +15,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new PrismaExceptionFilter());
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
