@@ -21,11 +21,10 @@ export class RolesGuard implements CanActivate {
       context.getHandler(), // 메서드
       context.getClass(), // 클래스
     ]);
-    // 아무 권한이 없으면 누구든 접속 가능
-    if (!roles || roles.length === 0) return true;
-
     const request = context.switchToHttp().getRequest<Request>();
     const user = request.user;
+    // 아무 권한이 없으면 누구든 접속 가능
+    if (!roles || roles.length === 0) return true;
 
     // 유저가 role이 없거나 포함하지 않으면
     if (!user?.role || !roles.includes(user.role))
