@@ -343,21 +343,66 @@ describe('Swagger (e2e)', () => {
     });
 
     describe('GET /production-plans', () => {
-      it('should have pagination + date query params', () => {
+      it('should have pagination + date range query params', () => {
         const ep = getEndpoint('/production-plans', 'get');
         const queries = getQueryParamNames(ep);
         expect(queries).toContain('page');
         expect(queries).toContain('take');
-        expect(queries).toContain('date');
+        expect(queries).toContain('start');
+        expect(queries).toContain('end');
       });
 
-      it('should have date query as optional', () => {
+      it('should have date range queries as optional', () => {
         const ep = getEndpoint('/production-plans', 'get');
-        const dateParam = ep.parameters.find(
-          (p: any) => p.name === 'date' && p.in === 'query',
+        const startParam = ep.parameters.find(
+          (p: any) => p.name === 'start' && p.in === 'query',
         );
-        expect(dateParam).toBeDefined();
-        expect(dateParam.required).toBe(false);
+        const endParam = ep.parameters.find(
+          (p: any) => p.name === 'end' && p.in === 'query',
+        );
+        expect(startParam).toBeDefined();
+        expect(startParam.required).toBe(false);
+        expect(endParam).toBeDefined();
+        expect(endParam.required).toBe(false);
+      });
+    });
+
+    describe('POST /production-plans/{planId}/result', () => {
+      it('should have 201, 401, 404 responses', () => {
+        const ep = getEndpoint('/production-plans/{planId}/result', 'post');
+        const codes = getResponseCodes(ep);
+        expect(codes).toContain('201');
+        expect(codes).toContain('401');
+        expect(codes).toContain('404');
+      });
+    });
+
+    describe('GET /production-plans/{planId}/result', () => {
+      it('should have 200 and 401 responses', () => {
+        const ep = getEndpoint('/production-plans/{planId}/result', 'get');
+        const codes = getResponseCodes(ep);
+        expect(codes).toContain('200');
+        expect(codes).toContain('401');
+      });
+    });
+
+    describe('PATCH /production-plans/{planId}/result', () => {
+      it('should have 200, 401, 404 responses', () => {
+        const ep = getEndpoint('/production-plans/{planId}/result', 'patch');
+        const codes = getResponseCodes(ep);
+        expect(codes).toContain('200');
+        expect(codes).toContain('401');
+        expect(codes).toContain('404');
+      });
+    });
+
+    describe('DELETE /production-plans/{planId}/result', () => {
+      it('should have 200, 401, 404 responses', () => {
+        const ep = getEndpoint('/production-plans/{planId}/result', 'delete');
+        const codes = getResponseCodes(ep);
+        expect(codes).toContain('200');
+        expect(codes).toContain('401');
+        expect(codes).toContain('404');
       });
     });
 
@@ -595,7 +640,7 @@ describe('Swagger (e2e)', () => {
 
   // ── Endpoint count ──
   describe('Total endpoints', () => {
-    it('should have exactly 24 endpoints', () => {
+    it('should have exactly 31 endpoints', () => {
       let count = 0;
       for (const methods of Object.values(swagger.paths)) {
         for (const method of Object.keys(methods as any)) {
@@ -604,7 +649,7 @@ describe('Swagger (e2e)', () => {
           }
         }
       }
-      expect(count).toBe(25);
+      expect(count).toBe(31);
     });
   });
 });
