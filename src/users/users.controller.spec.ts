@@ -39,7 +39,9 @@ describe('UsersController', () => {
     it('should throw NotFoundException when user not found', async () => {
       usersService.getUser.mockResolvedValue(null);
 
-      await expect(controller.getUser(999)).rejects.toThrow('유저를 찾을 수 없습니다.');
+      await expect(controller.getUser(999)).rejects.toThrow(
+        '유저를 찾을 수 없습니다.',
+      );
     });
   });
 

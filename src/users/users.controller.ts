@@ -13,6 +13,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { JwtPayload } from 'src/types/jwt';
+import { AuthUser } from './decorator/auth.user.decorator';
 import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
@@ -21,7 +23,14 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
+  @Get('me')
+  @ApiOperation({ summary: '자신 프로필 조회' })
+  @ApiResponse({ status: 200, description: '사용자 정보 (비밀번호 제외)' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  async getMe(@AuthUser() user: JwtPayload) {
+    const id = Number(user.sub);
+    return this.usersService.getMe(id);
+  }
   @Get(':id')
   @ApiOperation({ summary: '사용자 단건 조회' })
   @ApiParam({ name: 'id', description: '사용자 ID', example: 1 })
