@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { mockProductionPlan } from '../../test/helpers/fixtures';
 import {
   createMockPrismaService,
   MockPrismaService,
 } from '../../test/helpers/mock-prisma';
-import { mockProductionPlan } from '../../test/helpers/fixtures';
 import { ProductionPlansService } from './production-plans.service';
 
 describe('ProductionPlansService', () => {
@@ -58,7 +58,9 @@ describe('ProductionPlansService', () => {
       const updated = { ...mockProductionPlan, resultAmountGram: 9500 };
       prisma.productionPlan.update.mockResolvedValue(updated);
 
-      const result = await service.updateProductionPlan(1, { resultAmountGram: 9500 });
+      const result = await service.updateProductionPlan(1, {
+        resultAmountGram: 9500,
+      });
 
       expect(prisma.productionPlan.update).toHaveBeenCalledWith({
         data: { resultAmountGram: 9500 },
@@ -79,6 +81,7 @@ describe('ProductionPlansService', () => {
         include: {
           product: true,
           packagingSpec: true,
+          productionResult: true,
         },
       });
       expect(result).toEqual(mockProductionPlan);
@@ -86,29 +89,36 @@ describe('ProductionPlansService', () => {
   });
 
   describe('getProductionPlans', () => {
-    it('should query without date filter when date is undefined', async () => {
+    it('should query without date filter when dateRange is omitted', async () => {
       prisma.productionPlan.findMany.mockResolvedValue([mockProductionPlan]);
 
-      const result = await service.getProductionPlans({ page: 1, take: 20 });
+      const result = await service.getProductionPlans(
+        { page: 1, take: 20 },
+        {},
+      );
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith({
         where: undefined,
-        include: { product: true, packagingSpec: true },
+        include: { product: true, packagingSpec: true, productionResult: true },
         skip: 0,
         take: 21,
       });
       expect(result).toEqual({ data: [mockProductionPlan], hasNext: false });
     });
 
-    it('should query with date filter when date is provided', async () => {
-      const date = new Date('2026-02-01');
+    it('should query with date range filter when start and end are provided', async () => {
+      const start = new Date('2026-02-01');
+      const end = new Date('2026-02-28');
       prisma.productionPlan.findMany.mockResolvedValue([mockProductionPlan]);
 
-      const result = await service.getProductionPlans({ page: 1, take: 20 }, date);
+      const result = await service.getProductionPlans(
+        { page: 1, take: 20 },
+        { start, end },
+      );
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith({
-        where: { productionDate: date },
-        include: { product: true, packagingSpec: true },
+        where: { productionDate: { gte: start, lte: end } },
+        include: { product: true, packagingSpec: true, productionResult: true },
         skip: 0,
         take: 21,
       });
@@ -118,7 +128,10 @@ describe('ProductionPlansService', () => {
     it('should calculate pagination correctly', async () => {
       prisma.productionPlan.findMany.mockResolvedValue([]);
 
-      const result = await service.getProductionPlans({ page: 3, take: 10 });
+      const result = await service.getProductionPlans(
+        { page: 3, take: 10 },
+        {},
+      );
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -133,7 +146,10 @@ describe('ProductionPlansService', () => {
       const items = Array.from({ length: 21 }, () => mockProductionPlan);
       prisma.productionPlan.findMany.mockResolvedValue(items);
 
-      const result = await service.getProductionPlans({ page: 1, take: 20 });
+      const result = await service.getProductionPlans(
+        { page: 1, take: 20 },
+        {},
+      );
 
       expect(result.data).toHaveLength(20);
       expect(result.hasNext).toBe(true);

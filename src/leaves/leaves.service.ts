@@ -91,7 +91,7 @@ export class LeavesService {
     });
   }
 
-  async findLeavesByDateRange({ start, end }: { start: Date; end: Date }) {
+  async findLeavesByDateRange({ start, end }: { start?: Date; end?: Date }) {
     return this.prisma.leave.findMany({
       where: {
         startDate: { lte: end },

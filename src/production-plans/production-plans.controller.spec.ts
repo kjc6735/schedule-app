@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { mockProductionPlan } from '../../test/helpers/fixtures';
 import { ProductionPlansController } from './production-plans.controller';
 import { ProductionPlansService } from './production-plans.service';
-import { mockProductionPlan } from '../../test/helpers/fixtures';
 
 describe('ProductionPlansController', () => {
   let controller: ProductionPlansController;
@@ -54,7 +54,9 @@ describe('ProductionPlansController', () => {
       const updated = { ...mockProductionPlan, resultAmountGram: 9500 };
       service.updateProductionPlan.mockResolvedValue(updated);
 
-      const result = await controller.updateProductionPlan(1, { resultAmountGram: 9500 } as any);
+      const result = await controller.updateProductionPlan(1, {
+        resultAmountGram: 9500,
+      } as any);
 
       expect(service.updateProductionPlan).toHaveBeenCalledWith(1, {
         resultAmountGram: 9500,
@@ -78,13 +80,18 @@ describe('ProductionPlansController', () => {
     it('should call service.getProductionPlans and return paginated result', async () => {
       const paginated = { data: [mockProductionPlan], hasNext: false };
       service.getProductionPlans.mockResolvedValue(paginated);
-      const date = new Date('2026-02-01');
+      const start = new Date('2026-02-01');
+      const end = new Date('2026-02-28');
+      const dateRange = { start, end };
 
-      const result = await controller.getProductionPlans({ page: 1, take: 20 }, date);
+      const result = await controller.getProductionPlans(
+        { page: 1, take: 20 },
+        dateRange,
+      );
 
       expect(service.getProductionPlans).toHaveBeenCalledWith(
         { page: 1, take: 20 },
-        date,
+        dateRange,
       );
       expect(result).toEqual(paginated);
     });

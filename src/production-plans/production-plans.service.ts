@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { paginate } from 'src/common/dto/paginated-response.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { DateRagneQueryDto } from 'src/common/dto/date-range.query.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateProductionPlan,
@@ -34,28 +33,30 @@ export class ProductionPlansService {
       include: {
         product: true,
         packagingSpec: true,
+        productionResult: true,
       },
     });
   }
 
-  async getProductionPlans({ take, page }: PaginationDto, date?: Date) {
-    const skip = (page - 1) * take;
+  async getProductionPlans(
+    // { take, page }: PaginationDto,
+    { start, end }: DateRagneQueryDto = {},
+  ) {
+    // const skip = (page - 1) * take;
 
     const data = await this.prisma.productionPlan.findMany({
-      where: date
-        ? {
-            productionDate: date,
-          }
-        : undefined,
+      where:
+        start && end ? { productionDate: { gte: start, lte: end } } : undefined,
       include: {
         product: true,
         packagingSpec: true,
+        productionResult: true,
       },
-      skip,
-      take: take + 1,
+      // skip,
+      // take: take + 1,
     });
 
-    return paginate(data, take);
+    return data; //paginate(data, take);
   }
 
   async deleteProductionPlan(id: ProductionPlanId) {
