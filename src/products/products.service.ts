@@ -32,7 +32,11 @@ export class ProductsService {
     return this.prisma.product.findUnique({
       where: { id: productId },
       include: {
-        packagingSpecs: true,
+        packagingSpecs: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     });
   }
