@@ -28,7 +28,8 @@ export class PackagingSpecsService {
   }
 
   async deletePackagingSpec(id: PackagingSpecId) {
-    return this.prisma.packagingSpec.delete({
+    return this.prisma.packagingSpec.update({
+      data: { deletedAt: new Date() },
       where: { id },
     });
   }
