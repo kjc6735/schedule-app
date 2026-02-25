@@ -123,19 +123,15 @@ describe('Products (e2e)', () => {
 
   describe('DELETE /products/:productId', () => {
     it('should delete product when admin', async () => {
-      prisma.product.delete.mockResolvedValue(mockProduct);
+      prisma.product.findUnique.mockResolvedValue(mockProduct);
+      prisma.product.update.mockResolvedValue(undefined);
+      prisma.packagingSpec.updateMany.mockResolvedValue(undefined);
+      prisma.$transaction.mockResolvedValue(undefined);
 
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .delete('/products/1')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
-
-      expect(response.body).toEqual(
-        expect.objectContaining({
-          id: mockProduct.id,
-          name: mockProduct.name,
-        }),
-      );
     });
   });
 

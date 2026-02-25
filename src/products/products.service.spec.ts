@@ -82,14 +82,14 @@ describe('ProductsService', () => {
   });
 
   describe('getProductWithPackagingSpecs', () => {
-    it('should call prisma.product.findUnique with productId and include packagingSpecs', async () => {
+    it('should call prisma.product.findUnique with productId and include active packagingSpecs', async () => {
       prisma.product.findUnique.mockResolvedValue(mockProduct);
 
       const result = await service.getProductWithPackagingSpecs(1);
 
       expect(prisma.product.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
-        include: { packagingSpecs: true },
+        include: { packagingSpecs: { where: { deletedAt: null } } },
       });
       expect(result).toEqual(mockProduct);
     });
@@ -104,6 +104,7 @@ describe('ProductsService', () => {
       expect(prisma.product.findMany).toHaveBeenCalledWith({
         skip: 10,
         take: 11,
+        where: { deletedAt: null },
       });
       expect(result).toEqual({ data: [mockProduct], hasNext: false });
     });
@@ -120,15 +121,38 @@ describe('ProductsService', () => {
   });
 
   describe('deleteProduct', () => {
-    it('should call prisma.product.delete with id', async () => {
-      prisma.product.delete.mockResolvedValue(mockProduct);
+    it('should call findUnique then $transaction with soft-delete updates', async () => {
+      prisma.product.findUnique.mockResolvedValue(mockProduct);
+      prisma.product.update.mockResolvedValue(undefined);
+      prisma.packagingSpec.updateMany.mockResolvedValue(undefined);
+      prisma.$transaction.mockResolvedValue(undefined);
 
-      const result = await service.deleteProduct(1);
+      await service.deleteProduct(1);
 
-      expect(prisma.product.delete).toHaveBeenCalledWith({
+      expect(prisma.product.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
       });
-      expect(result).toEqual(mockProduct);
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.product.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 1 },
+          data: expect.objectContaining({ deletedAt: expect.any(Date) }),
+        }),
+      );
+      expect(prisma.packagingSpec.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { productId: mockProduct.id },
+          data: expect.objectContaining({ deletedAt: expect.any(Date) }),
+        }),
+      );
+    });
+
+    it('should throw BadRequestException when product not found', async () => {
+      prisma.product.findUnique.mockResolvedValue(null);
+
+      await expect(service.deleteProduct(999)).rejects.toThrow(
+        '존재하지 않는 상품입니다.',
+      );
     });
   });
 });
