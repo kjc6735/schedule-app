@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { paginate } from 'src/common/dto/paginated-response.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -53,6 +57,9 @@ export class ProductsService {
     const data = await this.prisma.product.findMany({
       skip,
       take: take + 1,
+      where: {
+        deletedAt: null,
+      },
     });
 
     return paginate(data, take);
@@ -64,8 +71,13 @@ export class ProductsService {
     const data = await this.prisma.product.findMany({
       skip,
       take: take + 1,
+      where: { deletedAt: null },
       include: {
-        packagingSpecs: true,
+        packagingSpecs: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     });
 
@@ -73,8 +85,31 @@ export class ProductsService {
   }
 
   async deleteProduct(id: ProductId) {
-    return this.prisma.product.delete({
-      where: { id },
-    });
+    const product = await this.getProduct(id);
+    if (!product) throw new BadRequestException('존재하지 않는 상품입니다.');
+
+    const deletedAt = new Date();
+    try {
+      await this.prisma.$transaction([
+        this.prisma.product.update({
+          where: {
+            id,
+          },
+          data: {
+            deletedAt,
+          },
+        }),
+        this.prisma.packagingSpec.updateMany({
+          where: {
+            productId: product.id,
+          },
+          data: {
+            deletedAt,
+          },
+        }),
+      ]);
+    } catch (e) {
+      throw new InternalServerErrorException('다시 시도해주세요.');
+    }
   }
 }
