@@ -12,6 +12,7 @@ describe('UsersController', () => {
     usersService = {
       getUser: vi.fn(),
       getUsers: vi.fn(),
+      getMe: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -24,6 +25,19 @@ describe('UsersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('getMe', () => {
+    it('should call service.getMe with user.sub', async () => {
+      const userDto = UserDto.from(mockUser);
+      usersService.getMe.mockResolvedValue(userDto);
+      const user = { sub: 1 } as any;
+
+      const result = await controller.getMe(user);
+
+      expect(usersService.getMe).toHaveBeenCalledWith(1);
+      expect(result).toEqual(userDto);
+    });
   });
 
   describe('getUser', () => {

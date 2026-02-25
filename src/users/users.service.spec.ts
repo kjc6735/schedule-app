@@ -5,6 +5,7 @@ import {
   createMockPrismaService,
   MockPrismaService,
 } from '../../test/helpers/mock-prisma';
+import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
@@ -43,6 +44,22 @@ describe('UsersService', () => {
       const result = await service.getUser({ userId: 'unknown' });
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('getMe', () => {
+    it('should return UserDto when user exists', async () => {
+      prisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const result = await service.getMe(1);
+
+      expect(result).toEqual(UserDto.from(mockUser));
+    });
+
+    it('should throw UnauthorizedException when user not found', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(service.getMe(999)).rejects.toThrow('권한 없음');
     });
   });
 
