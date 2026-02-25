@@ -6,6 +6,7 @@ export function createMockPrismaModel() {
     findUnique: vi.fn(),
     findMany: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
     delete: vi.fn(),
   };
 }
@@ -14,6 +15,7 @@ export type MockPrismaModel = ReturnType<typeof createMockPrismaModel>;
 
 export function createMockPrismaService() {
   return {
+    $transaction: vi.fn(),
     user: createMockPrismaModel(),
     product: {
       ...createMockPrismaModel(),
