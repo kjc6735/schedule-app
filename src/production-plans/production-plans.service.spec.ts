@@ -92,18 +92,13 @@ describe('ProductionPlansService', () => {
     it('should query without date filter when dateRange is omitted', async () => {
       prisma.productionPlan.findMany.mockResolvedValue([mockProductionPlan]);
 
-      const result = await service.getProductionPlans(
-        { page: 1, take: 20 },
-        {},
-      );
+      const result = await service.getProductionPlans({});
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith({
         where: undefined,
         include: { product: true, packagingSpec: true, productionResult: true },
-        skip: 0,
-        take: 21,
       });
-      expect(result).toEqual({ data: [mockProductionPlan], hasNext: false });
+      expect(result).toEqual([mockProductionPlan]);
     });
 
     it('should query with date range filter when start and end are provided', async () => {
@@ -111,48 +106,30 @@ describe('ProductionPlansService', () => {
       const end = new Date('2026-02-28');
       prisma.productionPlan.findMany.mockResolvedValue([mockProductionPlan]);
 
-      const result = await service.getProductionPlans(
-        { page: 1, take: 20 },
-        { start, end },
-      );
+      const result = await service.getProductionPlans({ start, end });
 
       expect(prisma.productionPlan.findMany).toHaveBeenCalledWith({
         where: { productionDate: { gte: start, lte: end } },
         include: { product: true, packagingSpec: true, productionResult: true },
-        skip: 0,
-        take: 21,
       });
-      expect(result).toEqual({ data: [mockProductionPlan], hasNext: false });
+      expect(result).toEqual([mockProductionPlan]);
     });
 
-    it('should calculate pagination correctly', async () => {
+    it('should return empty array when no plans exist', async () => {
       prisma.productionPlan.findMany.mockResolvedValue([]);
 
-      const result = await service.getProductionPlans(
-        { page: 3, take: 10 },
-        {},
-      );
+      const result = await service.getProductionPlans({});
 
-      expect(prisma.productionPlan.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          skip: 20,
-          take: 11,
-        }),
-      );
-      expect(result).toEqual({ data: [], hasNext: false });
+      expect(result).toEqual([]);
     });
 
-    it('should return hasNext=true when more items exist', async () => {
-      const items = Array.from({ length: 21 }, () => mockProductionPlan);
+    it('should return all plans without pagination', async () => {
+      const items = Array.from({ length: 25 }, () => mockProductionPlan);
       prisma.productionPlan.findMany.mockResolvedValue(items);
 
-      const result = await service.getProductionPlans(
-        { page: 1, take: 20 },
-        {},
-      );
+      const result = await service.getProductionPlans({});
 
-      expect(result.data).toHaveLength(20);
-      expect(result.hasNext).toBe(true);
+      expect(result).toHaveLength(25);
     });
   });
 

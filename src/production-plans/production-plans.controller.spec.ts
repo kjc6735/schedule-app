@@ -77,23 +77,17 @@ describe('ProductionPlansController', () => {
   });
 
   describe('getProductionPlans', () => {
-    it('should call service.getProductionPlans and return paginated result', async () => {
-      const paginated = { data: [mockProductionPlan], hasNext: false };
-      service.getProductionPlans.mockResolvedValue(paginated);
+    it('should call service.getProductionPlans with dateRange and return result', async () => {
+      const plans = [mockProductionPlan];
+      service.getProductionPlans.mockResolvedValue(plans);
       const start = new Date('2026-02-01');
       const end = new Date('2026-02-28');
       const dateRange = { start, end };
 
-      const result = await controller.getProductionPlans(
-        { page: 1, take: 20 },
-        dateRange,
-      );
+      const result = await controller.getProductionPlans(dateRange);
 
-      expect(service.getProductionPlans).toHaveBeenCalledWith(
-        { page: 1, take: 20 },
-        dateRange,
-      );
-      expect(result).toEqual(paginated);
+      expect(service.getProductionPlans).toHaveBeenCalledWith(dateRange);
+      expect(result).toEqual(plans);
     });
   });
 

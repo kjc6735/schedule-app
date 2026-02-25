@@ -343,13 +343,13 @@ describe('Swagger (e2e)', () => {
     });
 
     describe('GET /production-plans', () => {
-      it('should have pagination + date range query params', () => {
+      it('should have date range query params', () => {
         const ep = getEndpoint('/production-plans', 'get');
         const queries = getQueryParamNames(ep);
-        expect(queries).toContain('page');
-        expect(queries).toContain('take');
         expect(queries).toContain('start');
         expect(queries).toContain('end');
+        expect(queries).not.toContain('page');
+        expect(queries).not.toContain('take');
       });
 
       it('should have date range queries as optional', () => {
