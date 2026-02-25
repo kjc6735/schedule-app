@@ -64,12 +64,13 @@ describe('PackagingSpecsService', () => {
   });
 
   describe('deletePackagingSpec', () => {
-    it('should delete packaging spec by id', async () => {
-      prisma.packagingSpec.delete.mockResolvedValue(mockPackagingSpec);
+    it('should soft-delete packaging spec by id', async () => {
+      prisma.packagingSpec.update.mockResolvedValue(mockPackagingSpec);
 
       const result = await service.deletePackagingSpec(1);
 
-      expect(prisma.packagingSpec.delete).toHaveBeenCalledWith({
+      expect(prisma.packagingSpec.update).toHaveBeenCalledWith({
+        data: { deletedAt: expect.any(Date) },
         where: { id: 1 },
       });
       expect(result).toEqual(mockPackagingSpec);
