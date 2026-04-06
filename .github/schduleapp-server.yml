@@ -1,0 +1,37 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: scheduleapp-server
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  APP_NAME: schdule-app
+
+jobs:
+  build:
+
+    runs-on: self-hosted
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    - run: npm ci
+    - run: npm test
+    - run: npm run build --if-present
+    - name: Deploy
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      run: |
+        if pm2 describe $APP_NAME > /dev/null 2>&1; then
+          pm2 reload $APP_NAME
+        else
+          pm2 start npm --name $APP_NAME -- run start
+        fi
