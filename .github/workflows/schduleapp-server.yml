@@ -10,7 +10,7 @@ env:
   APP_NAME: schedule-app
   NODE_VERSION: 22.x
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
+  PROCESS_CNT: 1
 jobs:
   build:
 
@@ -34,5 +34,5 @@ jobs:
         if pm2 describe $APP_NAME > /dev/null 2>&1; then
           pm2 reload $APP_NAME
         else
-          pm2 start npm --name $APP_NAME -- run start
+          pm2 start npm --name $APP_NAME -i $PROCESS_CNT -- run start
         fi
